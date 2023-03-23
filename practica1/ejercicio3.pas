@@ -59,26 +59,97 @@ begin
 
 end;
 
+procedure imprimirEmpleado(emp: empleado; var empleadoString: string);
+begin
+    writeln ('Nombre: ', emp.nombre, ', Apellido: ', emp.apellido, ', Codigo: ', emp.codigo, ' DNI: ', emp.DNI, ' Edad: ', emp.edad);
+end;
 
-procedure buscarEmpleado(var archivo: archivo_empleados);
+procedure buscarEmpleado();
 var 
+    archivo: archivo_empleados;
+    nombreArchivo: string;
     cadena: tipoNombre;
+    stringEmpleado: string;
     empleadoActual: empleado;
     encontrado: boolean;
+    acc: integer;
+
 begin
-    writeln('Ingrese el nombre o apellido a buscar: ');
-    readln(cadena);
+    acc := 0;
+
+    writeln('¿Cómo se llama el archivo?');
+    readln(nombreArchivo);
+    assign(archivo, nombreArchivo);
 
     reset(archivo);
+
+    writeln('Ingrese el nombre o apellido a buscar: ');
+    readln(cadena);
 
     while (not EOF(archivo)) do begin
         read(archivo, empleadoActual);
         encontrado := ((empleadoActual.nombre = cadena) or (empleadoActual.apellido = cadena));
 
         if (encontrado) then
-            writeln ('Nombre: ', empleadoActual.nombre, ', Apellido: ', empleadoActual.apellido, ', Codigo: ', empleadoActual.codigo, ' DNI: ', empleadoActual.DNI, ' Edad: ', empleadoActual.edad)
-
+            acc := acc + 1;
+            imprimirEmpleado(empleadoActual, stringEmpleado);
     end;
+
+    if (acc = 0) then
+        writeln('No existen usuarios con ', cadena, ' de nombre o apellido');
+
+
+    close(archivo);
+end;
+
+procedure listarEmpleados();
+var 
+    archivo: archivo_empleados;
+    nombreArchivo: string;
+    emp: empleado;
+    texto: string;
+
+begin
+    writeln('¿Cómo se llama el archivo?');
+    readln(nombreArchivo);
+    assign(archivo, nombreArchivo);
+    reset(archivo);
+
+    while (not EOF(archivo)) do begin
+        read(archivo, emp);
+        imprimirEmpleado(emp, texto);
+    end;
+
+    close(archivo);
+end;
+
+procedure listarEmpleadosMayores();
+var
+    archivo: archivo_empleados;
+    nombreArchivo: string;
+    emp: empleado;
+    texto: string;
+    acc: integer;
+
+begin
+    acc := 0;
+
+    writeln('¿Cómo se llama el archivo?');
+    readln(nombreArchivo);
+
+    assign(archivo, nombreArchivo);
+    reset(archivo);
+
+    while (not EOF(archivo)) do begin
+        read(archivo, emp);
+
+        if(emp.edad > 70) then
+            acc := acc + 1;
+            imprimirEmpleado(emp, texto);
+    end;
+
+    if (acc = 0) then
+        writeln('No existen usuarios mayores a 70 años');
 
     close(archivo);
 end;
@@ -100,9 +171,9 @@ begin
 
     case opcion of 
         'A', 'a': crearArchivo(archivo, nombreArchivo);
-        // 'B', 'b': buscarEmpleado();
-        // 'C', 'c': listarEmpleados();
-        // 'D', 'd': listarEmpleadosMayores();
+        'B', 'b': buscarEmpleado();
+        'C', 'c': listarEmpleados();
+        'D', 'd': listarEmpleadosMayores();
     end;
 
 end.
