@@ -266,7 +266,7 @@ begin
 
 	while(codigoBuscado <> -1) do begin
 		indice := buscarIndiceEmpleado(archivo, codigoBuscado);
-		
+
 		seek(archivo, indice);
 		read(archivo, emp);
 		seek(archivo, indice);
@@ -287,8 +287,36 @@ begin
 
 end;
 
+procedure exportarTodo();
+var
+	emp: empleado;
+	archivo: archivo_empleados;
+	nuevoArchivo: archivo_empleados;
+	nombreArchivo: string;
+	nombreIngresado: string;
+	nuevoNombre: string;
+begin
+	write('Ingrese nombre del archivo a exportar: ');
+	readln(nombreArchivo);
+	assign(archivo, nombreArchivo);
+	reset(archivo);
+
+	write('Ingrese nombre del nuevo archivo: ');
+	readln(nombreIngresado);
+	nuevoNombre := nombreIngresado + '.txt';
+	assign(nuevoArchivo,  nuevoNombre);
+	rewrite(nuevoArchivo);
+
+	while (not EOF(archivo)) do begin
+		read(archivo, emp);
+		write(nuevoArchivo, emp);
+	end;
+
+	close(archivo);
+	close(nuevoArchivo);
 
 
+end;
 
 var
 	archivo: archivo_empleados;
@@ -301,10 +329,10 @@ begin
 	writeln('B: Buscar empleado por nombre o apellido');
 	writeln('C: Listar todos los empleados');
 	writeln('D: Listar empleados mayores a 70 años');
-	writeln('F: Añadir empleado/s');
-	writeln('H: Modificar edad a uno o más empleados');
-	writeln('I: Exportar en .txt');
-	writeln('J: Exportar empleados con DNI faltante en .txt');
+	writeln('E: Añadir empleado/s');
+	writeln('F: Modificar edad a uno o más empleados');
+	writeln('G: Exportar en .txt');
+	writeln('H: Exportar empleados con DNI faltante en .txt');
 	
 	readln(opcion);
 
@@ -313,10 +341,10 @@ begin
 		'B', 'b': buscarEmpleado();
 		'C', 'c': listarEmpleados();
 		'D', 'd': listarEmpleadosMayores();
-		'F', 'f': agregarEmpleados();
-		'G', 'g': modificarEdades();
-		// 'H', 'h': exportarTodo();
-		// 'I', 'i': exportarSinDNI();
+		'E', 'e': agregarEmpleados();
+		'F', 'f': modificarEdades();
+		'G', 'g': exportarTodo();
+		// 'H', 'h': exportarSinDNI();
 	end;
 
 end.
