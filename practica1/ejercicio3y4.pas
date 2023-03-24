@@ -307,9 +307,10 @@ begin
 	assign(nuevoArchivo,  nuevoNombre);
 	rewrite(nuevoArchivo);
 
+	read(archivo, emp);
 	while (not EOF(archivo)) do begin
-		read(archivo, emp);
 		write(nuevoArchivo, emp);
+		read(archivo, emp);
 	end;
 
 	close(archivo);
@@ -317,6 +318,35 @@ begin
 
 
 end;
+
+procedure exportarSinDNI();
+var
+	emp: empleado;
+	archivo: archivo_empleados;
+	nuevoArchivo: archivo_empleados;
+	nombreArchivo: string;
+begin
+	write('Ingrese nombre del archivo a analizar y exportar: ');
+	readln(nombreArchivo);
+	assign(archivo, nombreArchivo);
+	reset(archivo);
+
+	assign(nuevoArchivo, 'faltaDNIEmpleado.txt');
+	rewrite(nuevoArchivo);
+
+	read(archivo, emp);
+
+	while(not EOF(archivo)) do begin
+		if (emp.DNI = '00') then
+			write(nuevoArchivo, emp);
+
+		read(archivo, emp);
+	end;
+
+	close(archivo);
+	close(nuevoArchivo);
+end;
+
 
 var
 	archivo: archivo_empleados;
@@ -344,7 +374,7 @@ begin
 		'E', 'e': agregarEmpleados();
 		'F', 'f': modificarEdades();
 		'G', 'g': exportarTodo();
-		// 'H', 'h': exportarSinDNI();
+		'H', 'h': exportarSinDNI();
 	end;
 
 end.
