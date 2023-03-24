@@ -187,6 +187,10 @@ begin
 end;
 
 
+// Si abro un archivo acá con reset, y despues llamo a la funcion, ¿lo tengo que abrir de nuevo?
+// ¿La idea es agregarlos con la metodolodía maestro-detalle?
+
+
 procedure agregarEmpleados();
 var
 	archivo: archivo_empleados;
@@ -220,11 +224,70 @@ begin
 
 	close(archivo);
 
+end;
+
+function buscarIndiceEmpleado(var archivo: archivo_empleados; codigoBuscado: integer): Integer;
+var 
+	emp: empleado;
+
+begin
+	seek(archivo, 0);
+	writeln(filePos(archivo));
+	read(archivo, emp);
+	while ((emp.codigo <> codigoBuscado) and not EOF(archivo)) do begin
+		writeln(filePos(archivo));
+		read(archivo, emp);
+	end;
+
+	if (emp.codigo = codigoBuscado) then
+		buscarIndiceEmpleado := filePos(archivo) - 1
+	else 
+		buscarIndiceEmpleado := -1;
+end;
+
+
+procedure modificarEdades();
+var
+	nombreArchivo: string;
+	emp: empleado;
+	archivo: archivo_empleados;
+	codigoBuscado: integer;
+	nuevaEdad: SmallInt;
+	indice: integer;
+
+begin
+	writeln('¿Cómo es el nombre del archivo?');
+	readln(nombreArchivo);
+	assign(archivo, nombreArchivo);
+	reset(archivo);
+
+	writeln('Ingrese el código del empleado buscado o -1 para terminar');
+	readln(codigoBuscado);
+
+	while(codigoBuscado <> -1) do begin
+		indice := buscarIndiceEmpleado(archivo, codigoBuscado);
+		
+		seek(archivo, indice);
+		read(archivo, emp);
+		seek(archivo, indice);
+
+		write('Ingrese nueva edad: ');
+		read(nuevaEdad);
+
+		emp.edad := nuevaEdad;
+
+		write(archivo, emp);
+
+		writeln('Ingrese el código del empleado buscado o -1 para terminar');
+		readln(codigoBuscado);
+
+	end;	
+
+	close(archivo);
 
 end;
 
-// Si abro un archivo acá con reset, y despues llamo a la funcion, ¿lo tengo que abrir de nuevo?
-// ¿La idea es agregarlos con la metodolodía maestro-detalle?
+
 
 
 var
@@ -238,7 +301,7 @@ begin
 	writeln('B: Buscar empleado por nombre o apellido');
 	writeln('C: Listar todos los empleados');
 	writeln('D: Listar empleados mayores a 70 años');
-	writeln('F: Añadir empleado');
+	writeln('F: Añadir empleado/s');
 	writeln('H: Modificar edad a uno o más empleados');
 	writeln('I: Exportar en .txt');
 	writeln('J: Exportar empleados con DNI faltante en .txt');
@@ -251,7 +314,7 @@ begin
 		'C', 'c': listarEmpleados();
 		'D', 'd': listarEmpleadosMayores();
 		'F', 'f': agregarEmpleados();
-		// 'G', 'g': modificarEdades();
+		'G', 'g': modificarEdades();
 		// 'H', 'h': exportarTodo();
 		// 'I', 'i': exportarSinDNI();
 	end;
