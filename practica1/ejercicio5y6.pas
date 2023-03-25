@@ -37,7 +37,7 @@ type
     texto_corto = string[20];
     texto_largo = string[100];
     
-    tipoCelular = record
+    tipo_celular = record
         codigo: integer;
         nombre: texto_corto;
         marca: texto_corto;
@@ -47,13 +47,13 @@ type
         stock_disponible: integer;
     end;
 
-    archivo_celulares = file of celular;
+    archivo_celulares = file of tipo_celular;
 
-procedure pedirCelular(var c: tipoCelular);
+procedure pedirCelular(var c: tipo_celular);
 begin
 	writeln('Ingrese codigo: ');
-	readln(c.apellido);
-	if (c.codigo <> '-1') then begin
+	readln(c.codigo);
+	if (c.codigo <> -1) then begin
 		writeln('Ingrese nombre:');
 		readln(c.nombre);
 		writeln('Ingrese marca: ');
@@ -70,18 +70,29 @@ begin
 end;
 
 
-procedure leerCelular(var archivo: archivo_celulares; var celular: tipoCelular);
+procedure leerCelular(var archivo: archivo_celulares; var celular: tipo_celular);
 begin
     if (not EOF(archivo)) then
-        read(archivo, celular)
+        readln(archivo, celular)
     else
         celular.codigo := fin_archivo;
+end;
+
+procedure imprimirCelular(celular: tipo_celular);
+begin
+    with celular do begin
+        writeln('---------------------------------------------------------------------------------');
+        writeln('Codigo: ', codigo, ', Modelo: ', nombre, ', Precio:  ', precio );
+        writeln('Stock Minimo: ', stock_minimo, ', Stock Disponible: ', stock_disponible, ', Descripcion: ', descripcion);
+        writeln('Marca: ', marca);
+        writeln('---------------------------------------------------------------------------------');
+    end
 end;
 
 
 procedure crearArchivo();
 var
-    celular: tipoCelular;
+    celular: tipo_celular;
     archivo: archivo_celulares;
     nombre_archivo: texto_corto;
 begin   
@@ -94,39 +105,39 @@ begin
     pedirCelular(celular);
     
     while(celular.codigo <> fin_archivo) do begin
-        write(archivo, celul);
+        write(archivo, celular);
         pedirCelular(celular);
     end;
     
     close(archivo);
 end;
 
-
+// Como hago para separar cada campo presente en una de las 3 lineas del .txt?
 procedure crearDesdeArchivo();
 var
     nombre_fuente: texto_corto;
-    fuente: archivo_celulares;
+    fuente: TextFile;
     
     nuevo_nombre: texto_corto;
     nuevo_archivo: archivo_celulares;
 
-    celular_leido: tipoCelular;
+    celular_leido: tipo_celular;
     
 begin
     nombre_fuente := 'celulares.txt';
 
     write('Ingrese nombre del nuevo archivo: ');
-    writeln(nuevo_nombre);
+    readln(nuevo_nombre);
 
-    assign(nuevo_archivo, nuevo_nombre);
+    assign(nuevo_archivo, nuevo_nombre + '.dat');
     assign(fuente, nombre_fuente);
 
     reset(fuente);
     rewrite(nuevo_archivo);
 
-    leerCelular(fuente, celularLeido);
-
-    while (celularLeido.codigo <> fin_archivo) do begin
+    leerCelular(fuente, celular_leido);
+    
+    while (celular_leido.codigo <> fin_archivo) do begin
         write(nuevo_archivo, celular_leido);
         leerCelular(fuente, celular_leido);
     end;
@@ -134,6 +145,55 @@ begin
     close(fuente);
     close(nuevo_archivo);
 end;
+
+procedure listarBajoStock();
+var
+    celular: tipo_celular;
+    nombre_archivo: string;
+    archivo: archivo_celulares;
+begin
+    write('Ingrese el nombre del archivo: ');
+    readln(nombre_archivo);
+    assign(archivo, nombre_archivo);
+    reset(archivo);
+
+    leerCelular(archivo, celular);
+    with celular do begin 
+        while(codigo <> fin_archivo) do begin
+            if (stock_disponible < stock_minimo) then
+                imprimirCelular(celular);
+        end;
+    end;
+
+    close(archivo);
+end;
+
+procedure buscarPorDescripcion();
+var
+    descripcion_buscada: texto_largo;
+    archivo: archivo_celulares;
+    celular: tipo_celular;
+    nombre_archivo: texto_corto;
+begin
+    write('Ingrese nombre del archivo a analizar: ');
+    readln(nombre_archivo);
+    assign(archivo_celulares, nombre_archivo);
+    reset(archivo_celulares);
+
+    leerCelular(nombre_archivo, celular);
+    with celular do begin
+        while codigo <> -1 do begin
+            if (descripcion = descripcion_buscada) then begin
+                imprimirCelular(celular);
+            end;
+
+            leerCelular(nombre_archivo, celular)
+        end;
+    end;
+
+    close(archivo);
+end;
+
 
 
 
@@ -161,10 +221,10 @@ begin
     case opcion_elegida of 
         'Z', 'z': crearArchivo();
         'A', 'a': crearDesdeArchivo();
-        // 'B', 'b': listarBajoStock();
-        // 'C', 'c': buscarPorDescripcion();
-        // 'D', 'd': exportarTodo();
-        // 'E', 'e': agregarCelulares();
+        'B', 'b': listarBajoStock();
+        'C', 'c': buscarPorDescripcion();
+        // 'D', 'd': exportarTodo(); // DUDA
+        'E', 'e': agregarCelulares();
         // 'F', 'f': modificarStock();
         // 'G', 'g': exportarSinStock(); 
     end;
