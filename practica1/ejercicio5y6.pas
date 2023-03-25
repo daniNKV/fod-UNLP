@@ -78,6 +78,15 @@ begin
         celular.codigo := fin_archivo;
 end;
 
+procedure leerCelularBinario(var archivo: Text; var celular: tipo_celular);
+begin
+    with celular do begin
+        readln(archivo, codigo, nombre, precio);
+        readln(archivo, stock_minimo, stock_disponible, descripcion);
+        readln(marca);
+    end;
+end;
+
 procedure imprimirCelular(celular: tipo_celular);
 begin
     with celular do begin
@@ -116,7 +125,7 @@ end;
 procedure crearDesdeArchivo();
 var
     nombre_fuente: texto_corto;
-    fuente: archivo_celulares;
+    fuente: Text;
     
     nuevo_nombre: texto_corto;
     nuevo_archivo: archivo_celulares;
@@ -135,16 +144,49 @@ begin
     reset(fuente);
     rewrite(nuevo_archivo);
 
-    leerCelular(fuente, celular_leido);
+    leerCelularBinario(fuente, celular_leido);
     
     while (celular_leido.codigo <> fin_archivo) do begin
         write(nuevo_archivo, celular_leido);
-        leerCelular(fuente, celular_leido);
+        leerCelularBinario(fuente, celular_leido);
     end;
 
     close(fuente);
     close(nuevo_archivo);
 end;
+
+procedure exportarTodo();
+var
+    archivo: archivo_celulares;
+    salida: Text;
+    nombre_archivo: texto_corto;
+    texto_salida: texto_corto;
+    celular: tipo_celular;
+begin
+    write('Ingrese nombre del archivo a exportar: ');
+    readln(nombre_archivo);
+    assign(archivo, nombre_archivo);
+    reset(archivo);
+
+    texto_salida := 'celulares.txt';
+    assign(salida, texto_salida);
+    rewrite(salida);
+
+    while (not EOF(archivo)) do begin
+        with celular do begin
+            read(archivo, celular);
+            writeln(salida, codigo, ',', nombre, ',', precio);
+            writeln(salida, stock_minimo, ',', stock_disponible, ',', descripcion);
+            writeln(salida, marca);   
+        end;
+    end;
+
+    close(archivo);
+    close(salida);
+    
+end;
+
+
 
 procedure listarBajoStock();
 var
@@ -325,7 +367,7 @@ begin
         'A', 'a': crearDesdeArchivo();
         'B', 'b': listarBajoStock();
         'C', 'c': buscarPorDescripcion();
-        // 'D', 'd': exportarTodo(); // DUDA
+        'D', 'd': exportarTodo(); // DUDA
         'E', 'e': agregarCelulares();
         'F', 'f': modificarStock();
         // 'G', 'g': exportarSinStock(); 
