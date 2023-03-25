@@ -51,7 +51,7 @@ type
 
 procedure pedirCelular(var c: tipo_celular);
 begin
-	writeln('Ingrese codigo: ');
+	writeln('Ingrese codigo (-1 para terminar): ');
 	readln(c.codigo);
 	if (c.codigo <> -1) then begin
 		writeln('Ingrese nombre:');
@@ -73,7 +73,7 @@ end;
 procedure leerCelular(var archivo: archivo_celulares; var celular: tipo_celular);
 begin
     if (not EOF(archivo)) then
-        readln(archivo, celular)
+        read(archivo, celular)
     else
         celular.codigo := fin_archivo;
 end;
@@ -116,7 +116,7 @@ end;
 procedure crearDesdeArchivo();
 var
     nombre_fuente: texto_corto;
-    fuente: TextFile;
+    fuente: archivo_celulares;
     
     nuevo_nombre: texto_corto;
     nuevo_archivo: archivo_celulares;
@@ -177,24 +177,126 @@ var
 begin
     write('Ingrese nombre del archivo a analizar: ');
     readln(nombre_archivo);
-    assign(archivo_celulares, nombre_archivo);
-    reset(archivo_celulares);
+    assign(archivo, nombre_archivo);
+    reset(archivo);
 
-    leerCelular(nombre_archivo, celular);
+    write('Ingrese cadena de texto a buscar: ');
+    readln(descripcion_buscada);
+
+    leerCelular(archivo, celular);
     with celular do begin
         while codigo <> -1 do begin
             if (descripcion = descripcion_buscada) then begin
                 imprimirCelular(celular);
             end;
 
-            leerCelular(nombre_archivo, celular)
+            leerCelular(archivo, celular)
         end;
     end;
 
     close(archivo);
 end;
 
+function buscarIndiceCelular(var archivo: archivo_celulares; codigo_buscado: integer): integer;
+var
+    celular: tipo_celular;
+begin
+    seek(archivo, 0);
+    leerCelular(archivo, celular);
 
+    with celular do begin
+        while (codigo <> -1) and (codigo <> codigo_buscado) do
+            leerCelular(archivo, celular);
+
+        if (codigo = codigo_buscado) then
+            buscarIndiceCelular := FilePos(archivo) - 1
+        else 
+            buscarIndiceCelular := -1;
+    end;
+end;
+
+procedure agregarCelulares();
+var
+    archivo: archivo_celulares;
+    nombre_archivo: texto_corto;
+    celular: tipo_celular;
+    indice_existente: integer;
+begin
+    write('Ingrese nombre del archivo: ');
+    readln(nombre_archivo);
+    assign(archivo, nombre_archivo);
+    reset(archivo);
+
+    pedirCelular(celular);
+
+    with celular do begin
+        while(codigo <> -1) do begin
+            indice_existente := buscarIndiceCelular(archivo, codigo);
+            if (indice_existente = -1) then
+                write('El celular con código ', codigo,' ya se encuentra registrado, modifique el stock')
+            else begin
+                seek(archivo, fileSize(archivo));
+                write(archivo, celular);
+            end;
+
+            pedirCelular(celular)
+        end; 
+    end;  
+
+    close(archivo);
+
+end;
+
+
+
+
+procedure modificarStock();
+var
+    archivo: archivo_celulares;
+    nombre_archivo: texto_corto;
+    codigo_buscado: integer;
+    celular: tipo_celular;
+    nuevo_stock_minimo: integer;
+    nuevo_stock: integer;
+
+begin
+    write('Ingrese nombre del archivo a modificar: ');
+    readln(nombre_archivo);
+    assign(archivo, nombre_archivo);
+    reset(archivo);
+    write('Ingrese codigo del celular a modificar: ');
+    readln(codigo_buscado);
+
+
+    with celular do begin
+        leerCelular(archivo, celular);
+        while (codigo <> fin_archivo) do begin
+            if (codigo = codigo_buscado) then begin
+                writeln('Ingrese nuevo stock minimo (-1 para mantener)');
+                write('Nuevo valor: ');
+                readln(nuevo_stock_minimo);
+                writeln('Ingrese nuevo stock disponible (-1 para mantener)');
+                write('Nuevo valor: ');
+                readln(nuevo_stock);
+
+                if (nuevo_stock_minimo <> -1) then
+                    stock_minimo := nuevo_stock_minimo
+                else if (stock_minimo <> -1) then
+                    stock_disponible := nuevo_stock;
+                
+                seek(archivo, FilePos(archivo) - 1);
+
+                write(archivo, celular);
+
+            end;
+
+            leerCelular(archivo, celular);
+
+        end;
+    end;
+
+    close(archivo);
+end;
 
 
 var
@@ -225,7 +327,7 @@ begin
         'C', 'c': buscarPorDescripcion();
         // 'D', 'd': exportarTodo(); // DUDA
         'E', 'e': agregarCelulares();
-        // 'F', 'f': modificarStock();
+        'F', 'f': modificarStock();
         // 'G', 'g': exportarSinStock(); 
     end;
 
