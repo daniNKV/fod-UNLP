@@ -155,38 +155,6 @@ begin
     close(nuevo_archivo);
 end;
 
-procedure exportarTodo();
-var
-    archivo: archivo_celulares;
-    salida: Text;
-    nombre_archivo: texto_corto;
-    texto_salida: texto_corto;
-    celular: tipo_celular;
-begin
-    write('Ingrese nombre del archivo a exportar: ');
-    readln(nombre_archivo);
-    assign(archivo, nombre_archivo);
-    reset(archivo);
-
-    texto_salida := 'celulares.txt';
-    assign(salida, texto_salida);
-    rewrite(salida);
-
-    while (not EOF(archivo)) do begin
-        with celular do begin
-            read(archivo, celular);
-            writeln(salida, codigo, ',', nombre, ',', precio);
-            writeln(salida, stock_minimo, ',', stock_disponible, ',', descripcion);
-            writeln(salida, marca);   
-        end;
-    end;
-
-    close(archivo);
-    close(salida);
-    
-end;
-
-
 
 procedure listarBajoStock();
 var
@@ -239,6 +207,7 @@ begin
     close(archivo);
 end;
 
+
 function buscarIndiceCelular(var archivo: archivo_celulares; codigo_buscado: integer): integer;
 var
     celular: tipo_celular;
@@ -256,6 +225,7 @@ begin
             buscarIndiceCelular := -1;
     end;
 end;
+
 
 procedure agregarCelulares();
 var
@@ -288,8 +258,6 @@ begin
     close(archivo);
 
 end;
-
-
 
 
 procedure modificarStock();
@@ -341,14 +309,84 @@ begin
 end;
 
 
+procedure exportarTodo();
+var
+    archivo: archivo_celulares;
+    salida: Text;
+    nombre_archivo: texto_corto;
+    texto_salida: texto_corto;
+    celular: tipo_celular;
+begin
+    write('Ingrese nombre del archivo a exportar: ');
+    readln(nombre_archivo);
+    assign(archivo, nombre_archivo);
+    reset(archivo);
+
+    texto_salida := 'celulares.txt';
+    assign(salida, texto_salida);
+    rewrite(salida);
+
+    while (not EOF(archivo)) do begin
+        with celular do begin
+            read(archivo, celular);
+            writeln(salida, codigo, ',', nombre, ',', precio);
+            writeln(salida, stock_minimo, ',', stock_disponible, ',', descripcion);
+            writeln(salida, marca);   
+        end;
+    end;
+
+    close(archivo);
+    close(salida);
+    
+end;
+
+
+procedure exportarSinStock();
+var
+    archivo: archivo_celulares;
+    salida: Text;
+    nombre_salida: texto_corto;
+    nombre_archivo: texto_corto;
+    celular: tipo_celular;
+begin
+    nombre_salida := 'SinStock.txt';
+
+    write('Ingrese nombre del archivo a analizar y exportar: ');
+    readln(nombre_archivo);
+    
+    assign(archivo, nombre_archivo);
+    reset(archivo);
+    
+    assign(salida, nombre_salida);
+    rewrite(salida);
+
+    while (not EOF(archivo)) do begin
+        read(archivo, celular);
+        with celular do begin
+            if(stock_disponible = 0) then 
+                writeln(salida, codigo, ',', nombre, ',', precio);
+                writeln(salida, stock_minimo, ',', stock_disponible, ',', descripcion);
+                writeln(salida, marca);   
+        end;
+
+        read(archivo, celular);
+    end;
+
+    close(archivo);
+    close(salida);
+end;
+
+
 var
     opcion_elegida: char;
 
     
 begin
-    writeln('-----------------------------------');
-    writeln('############ CELULARES ############');
-    writeln('-----------------------------------');
+    writeln('-----------------------------------------------');
+    writeln('################## CELULARES ##################');
+    writeln('-----------------------------------------------');
+    writeln('Enter para salir ');
+    writeln();
     writeln('Z: Crear Archivo');
     writeln('A: Crear archivo de celulares"');
     writeln('B: Listar productos con stock menor al mínimo');
@@ -357,10 +395,12 @@ begin
     writeln('E: Añadir celulares');
     writeln('F: Modificar stock de un celular');
     writeln('G: Exportar productos sin stock');
-    writeln('-----------------------------------');
-
+    writeln();
+    writeln('-----------------------------------------------');
     write('Ingrese una opción: ');
     readln(opcion_elegida);
+    writeln('-----------------------------------------------');
+    
 
     case opcion_elegida of 
         'Z', 'z': crearArchivo();
@@ -370,7 +410,7 @@ begin
         'D', 'd': exportarTodo(); // DUDA
         'E', 'e': agregarCelulares();
         'F', 'f': modificarStock();
-        // 'G', 'g': exportarSinStock(); 
+        'G', 'g': exportarSinStock(); 
     end;
 
 end.
