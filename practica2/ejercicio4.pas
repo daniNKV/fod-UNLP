@@ -18,8 +18,8 @@ Uses sysutils;
 
 const
     UBICACION_MAESTRO = '/var/log';
-    FIN_ARCHIVO = 999999;
-    MAXIMO_CODIGO = 999999;
+    FIN_ARCHIVO = 32767;
+    MAXIMO_CODIGO = 32767;
     DIAS_MES = 31;
     CANTIDAD_MAQUINAS = 5;
 type
@@ -54,13 +54,13 @@ var
     i: integer;
     sesion_procesada: tipo_sesion;
 begin
-    sesion.codigo_usuario := 99999999;
-    sesion.fecha := DIAS_MES + 1;
+    sesion.codigo_usuario := MAXIMO_CODIGO;
+    sesion.fecha := DIAS_MES;
     for i := 1 to CANTIDAD_MAQUINAS do begin
         LeerDetalle(a[i], sesion_procesada);
         if (sesion_procesada.codigo_usuario < sesion.codigo_usuario) then
             sesion := sesion_procesada
-        else if (sesion_procesada.codigo_usuario = sesion.codigo_usuario) and (sesion_procesada.fecha < sesion.fecha) then
+        else if (sesion_procesada.codigo_usuario = sesion.codigo_usuario) and (sesion_procesada.fecha <= sesion.fecha) then
             sesion := sesion_procesada
         else
             Seek(a[i], FilePos(a[i]) - 1);
@@ -75,8 +75,6 @@ var
     archivos_detalle: archivos_array;
     codigo: integer;
     fecha: integer;
-    mismaFecha: boolean;
-    mismoUsuario: boolean;
     tiempo_acumulado: double;
     i, numero_maquina: integer;
     numero_maquina_string: string;
@@ -89,8 +87,8 @@ begin
         numero_maquina := i;
         numero_maquina_string := IntToStr(i);
         nombre_archivo := '/var/detalle-' + numero_maquina_string + '.dat';
-        Assign(archivo_detalles[numero_maquina], nombre_archivo);
-        Reset(archivo_detalles);
+        Assign(archivos_detalle[numero_maquina], nombre_archivo);
+        Reset(archivos_detalle[numero_maquina]);
     end;
 
     buscarMinimo(archivos_detalle, sesion);
@@ -101,8 +99,8 @@ begin
             fecha := sesion.fecha;
             tiempo_acumulado := 0;
        
-            while (codigo <> FIN ARCHIVO) and (codigo = sesion.codigo_usuario) and (fecha = sesion.fecha) do begin
-                tiempo_acumulado := tiempo_acumulado + sesion.tiempo;
+            while (codigo <> FIN_ARCHIVO) and (codigo = sesion.codigo_usuario) and (fecha = sesion.fecha) do begin
+                tiempo_acumulado := tiempo_acumulado + sesion.tiempo_sesion;
                 buscarMinimo(archivos_detalle, sesion);
             end;
 
@@ -113,12 +111,13 @@ begin
             Write(nuevo_archivo, sesiones);
         end; 
 
-        buscarMinimo(archivo_detalle, sesion);       
+        buscarMinimo(archivos_detalle, sesion);       
     end;
 
-    while ()
+    close(nuevo_archivo);
 
-
+    for i := 0 to CANTIDAD_MAQUINAS do
+        close(archivos_detalle[i])
 end;
 begin
     Merge();
