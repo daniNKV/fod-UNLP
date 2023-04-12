@@ -167,12 +167,46 @@ begin
             AgregarNacimiento(maestro, nacimiento);
             BuscarFallecido(fallecimientos,nacimiento.partida, fallecimiento, fallecio);
             if (fallecio) then
-                maestro.deceso := fallecimiento.deceso;
+                maestro.deceso := fallecimiento.deceso
+            else
+                maestro.deceso := nil;
             LeerNacimiento(nacimientos[i], nacimiento);
         end;
     end;
 end;
 
+procedure ExportarMaestro();
+var
+    nuevo_archivo: Text;
+    maestro: archivo_maestro;
+    registro: tipo_maestro;
+begin
+    Assign(nuevo_archivo, 'maestro-exportado.txt');
+    Assign(maestro, 'maestro.dat');
+    Reset(maestro);
+    Rewrite(nuevo_archivo);
+
+    LeerMaestro(maestro, registro);
+    while (maestro.partida <> FIN_ARCHIVO) do begin
+        with registro do begin
+            Writeln(nuevo_archivo, partida_nacimiento, matricula);
+            Writeln(nuevo_archivo, datos.nombre, datos.apellido);
+            Writeln(nuevo_archivo, direccion.calle, direccion.piso, direccion.depto, direccion.ciudad);
+            Writeln(nuevo_archivo, familiares.madre.nombre, familiares.madre.apellido);
+            Writeln(nuevo_archivo, familiares.padre.nombre, familiares.padre.apellido);
+            Writeln(nuevo_archivo, deceso.fecha, deceso.hora, deceso.matricula);
+
+        end;
+    end;
+end;
+    tipo_maestro = record
+        partida_nacimiento: integer;
+        matricula: integer;
+        datos: tipo_nombre;
+        direccion: tipo_direccion;
+        familiares: tipo_familiar;
+        deceso: tipo_deceso;
+    end;
 var
     opcion: char;
 begin
