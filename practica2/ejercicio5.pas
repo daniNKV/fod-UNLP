@@ -125,14 +125,35 @@ begin
     maestro.familiares := nacimiento.familiares;
 end;
 
+procedure BuscarFallecido(var fallecidos: archivos_fallecimientos; buscado: integer; var fallecido: tipo_fallecimiento; var fallecio: boolean );
+var 
+    j: integer;
+    fallecido_procesado: tipo_fallecimiento;
+begin
+    j := 1;
+    LeerFallecimiento(fallecidos[j], fallecido_procesado);
+    while (j < CANTIDAD_DELEGACIONES) and (buscado <> fallecido_procesado.partida_nacimiento) and (fallecido_procesado.partida_nacimiento <> FIN_ARCHIVO) do begin
+        while (buscado <> fallecido_procesado.partida_nacimiento) and (fallecido_procesado.partida_nacimiento <> FIN_ARCHIVO) do
+            LeerFallecimiento(fallecidos[j], fallecido_procesado);
+        if not fallecido.partida_nacimiento = FIN_ARCHIVO then begin
+            fallecio := true;
+            fallecido := fallecido_procesado;
+        end
+        else
+            fallecio := false;
+        j := j + 1;
+    end;   
+end;
 procedure CrearMaestro();
 var
     nacimientos: archivos_nacimientos;
     fallecimientos: archivos_fallecimientos;
     nacimiento: tipo_nacimiento;
     fallecimiento: tipo_fallecimiento;
+    fallecio: boolean;
     maestro: tipo_maestro;
     i: delegaciones_rango;
+    j: integer;
     nuevo_archivo: archivo_maestro;
 begin
     Assign(nuevo_archivo, '/var/maestro.dat');
@@ -144,14 +165,9 @@ begin
         LeerNacimiento(nacimientos[i], nacimiento);
         while (nacimiento.partida <> FIN_ARCHIVO) do begin
             AgregarNacimiento(maestro, nacimiento);
-           
-            // Se supone que nacimiento/fallecido están en la misma delegación
-            LeerFallecimiento(fallecimientos[i], fallecimiento);
-            while (nacimiento.partida <> fallecimiento.partida_nacimiento) and (fallecimiento.partida_nacimiento <> FIN_ARCHIVO) do
-                LeerFallecimiento(fallecimientos[i], fallecimiento);
-            if not fallecimiento.partida_nacimiento = FIN_ARCHIVO then
+            BuscarFallecido(fallecimientos,nacimiento.partida, fallecimiento, fallecio);
+            if (fallecio) then
                 maestro.deceso := fallecimiento.deceso;
-            
             LeerNacimiento(nacimientos[i], nacimiento);
         end;
     end;
