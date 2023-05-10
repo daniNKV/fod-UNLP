@@ -12,8 +12,6 @@
 // que no fueron borradas, una vez realizadas todas las bajas físicas
 
 program ejercicio6;
-uses
-  SysUtils;
 
 const
     FIN_ARCHIVO = 32767;
