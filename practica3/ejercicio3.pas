@@ -200,7 +200,7 @@ begin
         ClonarRegistro(nuevaCabecera, cabecera);
         nuevaCabecera.codigo := indice * (-1);
         seek(a, 0);
-        write(nuevaCabecera);
+        write(a, nuevaCabecera);
         seek(a, indice);
         write(a, cabecera);
     end; 
@@ -234,18 +234,52 @@ begin
 
     close(archivo);
 end;
+
+procedure ExportarArchivo();
+var 
+    archivo: archivo_novelas;
+    nuevo_archivo: Text;
+    nombre_archivo: string;
+    novela: tipo_novela;
+begin
+    write('Ingrese nombre del archivo a exportar: ');
+    readln(nombre_archivo);
+    assign(archivo, nombre_archivo);
+    assign(nuevo_archivo, 'novelas.txt');
+    reset(archivo);
+    rewrite(nuevo_archivo);
+
+    LeerNovelaDeArchivo(archivo, novela);
+    while (novela.codigo <> FIN_ARCHIVO) do begin
+        with novela do begin
+            writeln(nuevo_archivo, codigo);
+            writeln(nuevo_archivo, nombre);
+            writeln(nuevo_archivo, genero);
+            writeln(nuevo_archivo, director);
+            WriteLn(nuevo_archivo, duracion, precio);
+        end;
+
+        LeerNovelaDeArchivo(archivo, novela);
+    end;
+    
+    close(archivo);
+    close(nuevo_archivo);
+end;
 var
     opcion: char;
 begin
     writeln('############### Menu Principal #################');
-    writeln('A: Crear Archivo');
-    writeln('D: Modificar Archivo');
-    writeln('E: Listar Archivo');
-    writeln('##########################################');
+    writeln('################## Novelas #####################');
+    writeln('A: Crear');
+    writeln('D: Abrir');
+    writeln('E: Listar');
+    writeln('################################################');
     write('Teclee una opción: ');
     readln(opcion);
 
     case opcion of 
         'A', 'a': CrearArchivo();
+        'B', 'b': AbrirArchivo();
+        'C', 'c': ExportarArchivo();
     end;
 end.
