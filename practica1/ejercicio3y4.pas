@@ -24,6 +24,8 @@
 // NOTA: Las búsquedas deben realizarse por número de empleado
 
 program ejercicio3y4;
+const 
+	FIN_ARCHIVO = 32767;
 
 type
 	tipoNombre = string[40];
@@ -347,6 +349,43 @@ begin
 	close(nuevoArchivo);
 end;
 
+procedure LeerEmpleadoDeArchivo(var a: archivo_empleados; var e: empleado);
+begin
+	if (not EOF(a)) then
+		read(a, e)
+	else
+		e.codigo := FIN_ARCHIVO;
+end;
+
+procedure eliminarEmpleado();
+var
+	archivo: archivo_empleados;
+	nombreArchivo: string;
+	codigoBuscado: integer;
+	ultimoEmpleado: empleado;
+	indice: integer;
+begin
+	write('¿Cómo es el nombre del archivo?: ');
+	readln(nombreArchivo);
+	assign(archivo, nombreArchivo);
+	reset(archivo);
+	write('Ingrese código del empleado a eliminar:  ');
+	readln(codigoBuscado);
+
+	indice := buscarIndiceEmpleado(archivo, codigoBuscado);
+
+	if indice <> -1 then begin
+		seek(archivo, fileSize(archivo));
+		LeerEmpleadoDeArchivo(archivo, ultimoEmpleado);
+		seek(archivo, indice);
+		write(archivo, ultimoEmpleado);
+		seek(archivo, fileSize(archivo));
+		write(EOF);
+	end;
+
+	close(archivo);
+end;
+
 
 var
 	archivo: archivo_empleados;
@@ -363,6 +402,7 @@ begin
 	writeln('F: Modificar edad a uno o más empleados');
 	writeln('G: Exportar en .txt');
 	writeln('H: Exportar empleados con DNI faltante en .txt');
+	writeln('I: Eliminar empleado');
 	
 	readln(opcion);
 
@@ -375,6 +415,7 @@ begin
 		'F', 'f': modificarEdades();
 		'G', 'g': exportarTodo();
 		'H', 'h': exportarSinDNI();
+		'I', 'i': eliminarEmpleado();
 	end;
 
 end.
