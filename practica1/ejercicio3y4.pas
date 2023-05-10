@@ -375,12 +375,12 @@ begin
 	indice := buscarIndiceEmpleado(archivo, codigoBuscado);
 
 	if indice <> -1 then begin
-		seek(archivo, fileSize(archivo));
+		seek(archivo, fileSize(archivo) - 1);
 		LeerEmpleadoDeArchivo(archivo, ultimoEmpleado);
 		seek(archivo, indice);
 		write(archivo, ultimoEmpleado);
-		seek(archivo, fileSize(archivo));
-		write(EOF);
+		seek(archivo, fileSize(archivo) - 1);
+		Truncate(archivo)
 	end;
 
 	close(archivo);
