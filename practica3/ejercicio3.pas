@@ -36,7 +36,7 @@ program ejercicio3;
 const
     FIN_ARCHIVO = 32767;
 type
-    cadena: string[40];
+    cadena = string[40];
     tipo_novela = record
         codigo: integer;
         genero: cadena;
@@ -66,6 +66,22 @@ begin
     end;
 end;
 
+procedure ReleerNovelaDeTeclado(var n: tipo_novela; codigo: integer);
+begin
+    n.codigo := codigo;
+    Writeln('Leyendo datos de novela con código: ', codigo);
+    Write('Ingrese genero: ');
+    readln(n.genero);
+    Write('Ingrese nombre: ');
+    readln(n.nombre);
+    Write('Ingrese duracion: ');
+    readln(n.duracion);
+    Write('Ingrese director: ');
+    readln(n.director);
+    Write('Ingrese precio: ');
+    readln(n.precio);
+end;
+
 procedure LeerNovelaDeArchivo(var a: archivo_novelas; var n: tipo_novela);
 begin
     if (not EOF(a)) then
@@ -73,6 +89,24 @@ begin
     else
         n.codigo := FIN_ARCHIVO;
 end;
+
+function buscarIndiceNovela(var archivo: archivo_novelas; codigoBuscado: integer): Integer;
+var 
+	novela: tipo_novela;
+
+begin
+    reset(archivo);
+    LeerNovelaDeArchivo(archivo, novela);
+	while (novela.codigo <> FIN_ARCHIVO) and (novela.codigo <> codigoBuscado) do
+        LeerNovelaDeArchivo(archivo, novela);
+	if (novela.codigo = codigoBuscado) then
+		buscarIndiceNovela := filePos(archivo) - 1
+	else 
+		buscarIndiceNovela := -1;
+    
+    seek(archivo, 0);
+end;
+
 procedure CrearArchivo();
 var
     archivo: archivo_novelas;
@@ -91,7 +125,7 @@ begin
 
     while (novela.codigo <> -1) do begin
         write(archivo, novela);
-        LeerNovelaDeTeclado(novela;)
+        LeerNovelaDeTeclado(novela);
     end;
 
     close(archivo);
@@ -105,7 +139,6 @@ var
     novelaLeida: tipo_novela;
 begin
     LeerNovelaDeTeclado(novelaIngresada);
-    
     LeerNovelaDeArchivo(a, novelaLeida);
     if (novelaLeida.codigo < 0) and (novelaLeida.codigo <> FIN_ARCHIVO) then begin
         seek(a, Abs(novelaLeida.codigo));
@@ -119,7 +152,58 @@ begin
         seek(a, FileSize(a));
         write(a, novelaIngresada);
     end;
+end;
 
+procedure Modificar(var novelas: archivo_novelas);
+var
+    novelaModificada: tipo_novela;
+    indice: integer;
+    codigo: integer;
+begin
+    Write('Ingrese codigo de la novela a modificar: ');
+    readln(codigo);
+    indice := buscarIndiceNovela(novelas, codigo);
+    if (indice < 0) then 
+        writeln('No existe novela con el código ingresado')
+    else begin
+        ReleerNovelaDeTeclado(novelaModificada, codigo);
+        seek(novelas, indice);
+        write(novelas, novelaModificada);
+    end;
+end;
+
+procedure ClonarRegistro(var r1: tipo_novela; var r2: tipo_novela);
+begin
+    r1.codigo := r2.codigo;
+    r1.genero := r2.genero;
+    r1.nombre := r2.nombre;
+    r1.duracion := r2.duracion;
+    r1.director := r2.director;
+    r1.precio := r2.precio;
+end;
+
+procedure Eliminar(var a: archivo_novelas);
+var
+    indice: integer;
+    cabecera: tipo_novela;
+    nuevaCabecera: tipo_novela;
+    codigo: integer;
+begin
+    write('Ingrese código de Novela a eliminar: ');
+    readln(codigo);
+    indice := buscarIndiceNovela(a, codigo);
+
+    if (indice < 0) then
+        writeln('No existe novela con el código ingresado')
+    else begin
+        LeerNovelaDeArchivo(a, cabecera);
+        ClonarRegistro(nuevaCabecera, cabecera);
+        nuevaCabecera.codigo := indice * (-1);
+        seek(a, 0);
+        write(nuevaCabecera);
+        seek(a, indice);
+        write(a, cabecera);
+    end; 
 
 end;
 
@@ -143,8 +227,9 @@ begin
     readln(opcion);
 
     case opcion of 
-        'A', 'a': DarAlta(archivo)
-
+        'A', 'a': DarAlta(archivo);
+        'B', 'b': Modificar(archivo);
+        'C', 'c': Eliminar(archivo);
     end;
 
     close(archivo);
@@ -162,4 +247,5 @@ begin
 
     case opcion of 
         'A', 'a': CrearArchivo();
+    end;
 end.
