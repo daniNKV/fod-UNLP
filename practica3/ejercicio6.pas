@@ -12,6 +12,8 @@
 // que no fueron borradas, una vez realizadas todas las bajas físicas
 
 program ejercicio6;
+uses
+  SysUtils;
 
 const
     FIN_ARCHIVO = 32767;
@@ -31,6 +33,21 @@ type
     end;
     archivo_prendas = file of tipo_prenda;
     archivo_detalle = file of tipo_codigo;
+    lista = ^nodo;
+    nodo = record
+        dato: tipo_prenda;
+        sig: lista;
+    end;
+
+procedure AgregarAdelante(var L: lista; p: tipo_prenda);
+var
+    nodo: lista;
+begin
+    new(nodo);
+    nodo^.dato := p;
+    nodo^.sig := L;
+    L := nodo;
+end;
 
 procedure LeerPrendaDeArchivo(var a: archivo_prendas; var p: tipo_prenda);
 begin
@@ -72,6 +89,36 @@ begin
 
     close(maestro);
     close(detalle);
+end;
+
+procedure Compactar(var a: archivo_prendas);
+var
+    sinEliminar: lista;
+    prenda: tipo_prenda;
+    nuevoArchivo: archivo_prendas;
+    nuevoNombre: string;
+begin
+    reset(a);
+    sinEliminar := nil;
+    LeerPrendaDeArchivo(a, prenda);
+    while (prenda.codigo <> FIN_ARCHIVO) do begin
+        if (prenda.stock >= 0) then
+            AgregarAdelante(sinEliminar, prenda);
+        
+        LeerPrendaDeArchivo(a, prenda);
+    end;
+    assign(nuevoArchivo, 'prendas-actualizado.dat');
+    rewrite(nuevoArchivo);
+    while (sinEliminar <> nil) do begin
+        write(nuevoArchivo, sinEliminar^.dato);
+        sinEliminar := sinEliminar^.sig;
+    end;
+
+    RenameFile('prendas.dat', 'prendas-antiguo.dat');
+
+    close(a);
+    close(nuevoArchivo);
+  
 end;
 
 
