@@ -16,6 +16,12 @@
     // b. Liste el contenido del archivo omitiendo las flores eliminadas. Modifique lo que
     // considere necesario para obtener el listado
 
+// 5. Dada la estructura planteada en el ejercicio anterior, implemente el siguiente módulo:
+// {Abre el archivo y elimina la flor recibida como parámetro manteniendo
+// la política descripta anteriormente}
+// procedure eliminarFlor (var a: tArchFlores; flor:reg_flor);
+
+
 program ejercicio4y5;
 const 
     FIN_ARCHIVO = 32767;
@@ -65,6 +71,48 @@ begin
         seek(a, FileSize(a) - 1);
         write(a, flor);
     end;
+
+    close(a);
+end;
+
+function BuscarIndiceFlor(var a: tArchFlores; codigo: integer): integer;
+var
+    flor: reg_flor;
+begin
+    LeerFlorDeArchivo(a, flor);
+
+    while (flor.codigo <> FIN_ARCHIVO) and (flor.codigo <> codigo) do
+        LeerFlorDeArchivo(a, flor);
+    
+    if (flor.codigo = codigo) then
+        BuscarIndiceFlor := FilePos(a) - 1
+    else 
+        BuscarIndiceFlor := -1;
+    
+end;
+
+{Abre el archivo y elimina la flor recibida como parámetro manteniendo
+la política descripta anteriormente}
+procedure eliminarFlor (var a: tArchFlores; flor:reg_flor);
+var
+    cabecera: reg_flor;
+    eliminada: reg_flor;
+    indice: integer;
+begin
+    reset(a);
+    indice := BuscarIndiceFlor(a, flor.codigo);
+    if (indice <> -1) then begin
+        LeerFlorDeArchivo(a, cabecera);
+        seek(a, indice);
+        LeerFlorDeArchivo(a, eliminada);
+        seek(a, indice);
+        write(a, cabecera);
+        seek(a, 0);
+        eliminada.codigo := indice * (-1);
+        write(a, eliminada);
+    end
+    else 
+        writeln('La flor no existe en el archivo');
 
     close(a);
 end;
