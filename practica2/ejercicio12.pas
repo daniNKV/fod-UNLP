@@ -132,10 +132,10 @@ begin
     end;
 
     if anioEncontrado then
-        ImprimirInformeAccesos(a, accesos, accesoLeido);
+        ImprimirInformeAccesos(a, accesos, accesoLeido)
     else
         WriteLn('El año ingresado no ha sido encontrado');
 
 end;
-    
+begin
 end.
